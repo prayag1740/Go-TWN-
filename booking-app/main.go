@@ -3,7 +3,10 @@
 
 package main
 
-import "fmt" // fmt is the function import from main package
+import (
+	"fmt" // fmt is the function import from main package
+	"strings"
+)
 
 // entry point of our go application
 func main() {
@@ -34,29 +37,52 @@ func main() {
 	//Slices abstraction of arrays ; no need to define size at declarartion
 	var bookings []string
 
-	//Taking input from user
-	fmt.Println("enter your first name : ")
-	fmt.Scan(&firstName) //whatever user enters assign that value
-	//a pointer is a variable that points to the memory address of another variable
-	// assign value in username memory that is why pointer is used
+	//creating infinte loop for aksing user again and again
+	for remainingTickets > 0 {
 
-	fmt.Println("enter your last name : ")
-	fmt.Scan(&lastName)
+		//Taking input from user
+		fmt.Println("enter your first name : ")
+		fmt.Scan(&firstName) //whatever user enters assign that value
+		//a pointer is a variable that points to the memory address of another variable
+		// assign value in username memory that is why pointer is used
 
-	fmt.Println("enter your email : ")
-	fmt.Scan(&email)
+		fmt.Println("enter your last name : ")
+		fmt.Scan(&lastName)
 
-	fmt.Println("enter no of tickets : ")
-	fmt.Scan(&userTickets)
+		fmt.Println("enter your email : ")
+		fmt.Scan(&email)
 
-	// bookings[0] = firstName + " " + lastName ----------> in case of arrays
-	bookings = append(bookings, firstName+" "+lastName)
-	remainingTickets = remainingTickets - userTickets
+		fmt.Println("enter no of tickets : ")
+		fmt.Scan(&userTickets)
 
-	fmt.Printf("Thank you %v %v for booking %v tickets. You will receive a confirmation email at %v\n", firstName, lastName, userTickets, email)
-	fmt.Printf("%v tickets remaining for %v\n", remainingTickets, conferenceName)
+		if userTickets > remainingTickets {
+			fmt.Printf("We only have %v tickets remaining . So you can't book %v tickets\n", remainingTickets, userTickets)
+			continue
+		}
 
-	fmt.Printf("These are all our bookings : %v\n", bookings)
+		// bookings[0] = firstName + " " + lastName ----------> in case of arrays
+		bookings = append(bookings, firstName+" "+lastName)
+		remainingTickets = remainingTickets - userTickets
+
+		fmt.Printf("Thank you %v %v for booking %v tickets. You will receive a confirmation email at %v\n", firstName, lastName, userTickets, email)
+		fmt.Printf("%v tickets remaining for %v\n", remainingTickets, conferenceName)
+
+		firstNames := []string{}
+		for _, booking := range bookings {
+			var names = strings.Fields(booking) // splits the string with white space as seperator
+			var firstName = names[0]
+			firstNames = append(firstNames, firstName)
+		}
+
+		fmt.Printf("The first name of bookings are : %v\n", firstNames)
+
+		if remainingTickets == 0 {
+			//end program
+			fmt.Println("Our conference is booked out. Come back next year")
+			break
+		}
+
+	}
 
 }
 
