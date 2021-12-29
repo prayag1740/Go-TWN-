@@ -23,17 +23,40 @@ func main() {
 	//All variables expect datatypes ;; basic ones -- String and Integer
 	// when we declare and initialize a variable in same line; no need to provide the data type as in case of conferenceName variable
 
-	var userName string
+	var firstName string
+	var lastName string
+	var email string
 	var userTickets int
 
+	//ARRAYS --> need to define size at declaration (fized size)
+	// var bookings [50]string //To store who created the bookings -----------> ARRAY
+
+	//Slices abstraction of arrays ; no need to define size at declarartion
+	var bookings []string
+
 	//Taking input from user
-	fmt.Println("enter your name : ")
-	fmt.Scan(&userName) //whatever user enters assign that value
+	fmt.Println("enter your first name : ")
+	fmt.Scan(&firstName) //whatever user enters assign that value
 	//a pointer is a variable that points to the memory address of another variable
 	// assign value in username memory that is why pointer is used
 
-	userTickets = 2
-	fmt.Printf("User %v booked %v tickets \n", userName, userTickets)
+	fmt.Println("enter your last name : ")
+	fmt.Scan(&lastName)
+
+	fmt.Println("enter your email : ")
+	fmt.Scan(&email)
+
+	fmt.Println("enter no of tickets : ")
+	fmt.Scan(&userTickets)
+
+	// bookings[0] = firstName + " " + lastName ----------> in case of arrays
+	bookings = append(bookings, firstName+" "+lastName)
+	remainingTickets = remainingTickets - userTickets
+
+	fmt.Printf("Thank you %v %v for booking %v tickets. You will receive a confirmation email at %v\n", firstName, lastName, userTickets, email)
+	fmt.Printf("%v tickets remaining for %v\n", remainingTickets, conferenceName)
+
+	fmt.Printf("These are all our bookings : %v\n", bookings)
 
 }
 
