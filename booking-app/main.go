@@ -38,7 +38,7 @@ func main() {
 	var bookings []string
 
 	//creating infinte loop for aksing user again and again
-	for remainingTickets > 0 {
+	for {
 
 		//Taking input from user
 		fmt.Println("enter your first name : ")
