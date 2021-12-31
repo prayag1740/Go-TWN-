@@ -4,20 +4,36 @@
 package main
 
 import (
-	"fmt" // fmt is the function import from main package
-	"strings"
+	"booking-app/helper" //our own package defined
+	"fmt"                // fmt is the function import from main package
+	"sync"
+	"time"
 )
 
 var conferenceName = "Go Conference" //camel case for variables
 //Pacakage level variables can be accessed between diff functions
+
+// var bookings = make([]map[string]string, 1) //initial size   ---> in case of map
+type UserData struct { //For saving different datatypes for an entity ; lightweight class
+	firstName       string
+	lastName        string
+	email           string
+	numberOfTickets int
+}
+
+var bookings = make([]UserData, 1) // creating a empty list of Userdata struct
+
+var remainingTickets = 50
+
+var wg = sync.WaitGroup{}
 
 // entry point of our go application
 func main() {
 
 	// variable declaration
 
-	const conferenceTickets = 50          //constant whose value cannot be changed
-	remainingTickets := conferenceTickets //same shortcut way of declaring variable without datatype ; not applicable for constants
+	const conferenceTickets = 50 //constant whose value cannot be changed
+	//same shortcut way of declaring variable without datatype ; not applicable for constants
 
 	greetUsers(conferenceTickets, remainingTickets)
 
@@ -29,18 +45,13 @@ func main() {
 	// var bookings [50]string //To store who created the bookings -----------> ARRAY
 
 	//Slices abstraction of arrays ; no need to define size at declarartion
-	var bookings []string
 
 	//creating infinte loop for aksing user again and again
 	for {
 
 		firstName, lastName, email, userTickets := getUserInput()
-
 		//Validations
-		isValidName := len(firstName) >= 2 && len(lastName) >= 2
-		isValidEmail := strings.Contains(email, "@")
-		var isValidTicket = userTickets > 0 && userTickets <= remainingTickets
-
+		isValidName, isValidEmail, isValidTicket := helper.ValidateUserInput(firstName, lastName, email, userTickets, remainingTickets)
 		if !isValidName || !isValidEmail || !isValidTicket {
 			if !isValidName {
 				fmt.Println("first name and last name you entered is too short")
@@ -53,19 +64,21 @@ func main() {
 			}
 			continue
 		}
-
 		if userTickets > remainingTickets {
 			fmt.Printf("We only have %v tickets remaining . So you can't book %v tickets\n", remainingTickets, userTickets)
 			continue
 		}
 
 		// bookings[0] = firstName + " " + lastName ----------> in case of arrays
-		bookings = append(bookings, firstName+" "+lastName)
+		getUserMapData(firstName, lastName, email, userTickets)
+		bookTickets(userTickets, firstName, lastName, email)
 
-		remainingTickets := bookTickets(remainingTickets, userTickets, firstName, lastName, email)
-
-		firstNames := FirstNames(bookings)
+		firstNames := FirstNames()
 		fmt.Printf("The first name of bookings are : %v\n", firstNames)
+
+		wg.Add(1)                                              //sets the number of threads the main thread should wait for ; for our case it is 1
+		go sendTicket(userTickets, firstName, lastName, email) //creating a seperate thread for execution in parallel; does not block
+		//when main thread is done is does not wait for other threads
 
 		if remainingTickets == 0 {
 			//end program
@@ -74,7 +87,7 @@ func main() {
 		}
 
 	}
-
+	wg.Wait() //waits for all other threads to be completed before completeting main thread
 }
 
 func greetUsers(confTickets int, remTickets int) {
@@ -85,12 +98,10 @@ func greetUsers(confTickets int, remTickets int) {
 	fmt.Println("Get your tickets here to attend")
 }
 
-func FirstNames(bookings []string) []string { //2nd value is return type
+func FirstNames() []string { //2nd value is return type
 	firstNames := []string{}
 	for _, booking := range bookings {
-		var names = strings.Fields(booking) // splits the string with white space as seperator
-		var firstName = names[0]
-		firstNames = append(firstNames, firstName)
+		firstNames = append(firstNames, booking.firstName)
 	}
 	return firstNames
 }
@@ -120,14 +131,42 @@ func getUserInput() (string, string, string, int) {
 	return firstName, lastName, email, userTickets
 }
 
-func bookTickets(remainingTickets int, userTickets int, fname string, lname string, email string) int {
+func bookTickets(userTickets int, fname string, lname string, email string) {
 	remainingTickets = remainingTickets - userTickets
-
 	fmt.Printf("Thank you %v %v for booking %v tickets. You will receive a confirmation email at %v\n", fname, lname, userTickets, email)
 	fmt.Printf("%v tickets remaining for %v\n", remainingTickets, conferenceName)
 
-	return remainingTickets
+}
 
+func getUserMapData(firstName string, lastName string, email string, userTickets int) {
+
+	//create a map for user (MAP)
+	//in a map there can be no mix of data types
+	// var userData = make(map[string]string) //empty map
+
+	var userData = UserData{
+		firstName:       firstName,
+		lastName:        lastName,
+		email:           email,
+		numberOfTickets: userTickets,
+	}
+
+	// userData["firstName"] = firstName
+	// userData["lastName"] = lastName
+	// userData["email"] = email
+	// userData["userTicketsCount"] = strconv.FormatInt(int64(userTickets), 10)
+
+	bookings = append(bookings, userData)
+}
+
+func sendTicket(userTickets int, firstName string, lastName string, email string) {
+	time.Sleep(10 * time.Second)
+	var ticket = fmt.Sprintf("%v tickets for %v %v", userTickets, firstName, lastName) //saves in variable formatted string
+	fmt.Println("######################")
+	fmt.Printf("Sending ticket:\n %v to %v\n", ticket, email)
+	fmt.Println("######################")
+	wg.Done() //tells that is done
 }
 
 // go run main.go -- To run the a go file
+// go run . -- to run all the files within current directory
